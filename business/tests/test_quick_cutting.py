@@ -23,4 +23,3 @@ print('\nТест 1')
 products_test1: list[float] = [0.1, 0.1, 0.2, 0.3]
 rests_test1: list[float] = [0.15, 0.15, 0.15, 0.4, 0.05]
 print_result(products_test1, rests_test1)
-
