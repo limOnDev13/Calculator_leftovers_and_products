@@ -75,6 +75,9 @@ def quick_cutting(remnants: list[float], products: list[float], cutting_width: f
         # если изделия закончились - выйдем из цикла
         if not cur_products:
             break
+        # Если остаток меньше всех изделий, то пропустим итерацию
+        if tuple_remnant[0] < min(cur_products):
+            continue
 
         values: list[list[float]] = list()
 
