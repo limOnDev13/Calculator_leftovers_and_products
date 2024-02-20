@@ -37,52 +37,56 @@ def min_rest_cutting(remnant: float, products: list[float], cutting_width: float
     return result_selection
 
 
-def remove_elements_from_list(list_nums: list[float], elements: list[float]) -> list[float]:
+def remove_list_from_list(init_list: list[float], deleted_list: list[float]):
     """
-    Удаляет из list_nums элементы elements и возвращает результатный список.
-    :param list_nums: Список чисел.
-    :param elements: Список чисел, которые нужно удалить.
-    :return: Список полученных чисел.
+    Функция удаляет все элементы deleted_list из init_list.
+    :param init_list: Начальный список.
+    :param deleted_list: Список элементов, которые нужно удалить.
+    :return: Ничего, функция редактирует init_list.
     """
-    return [
-        num
-        for num in list_nums
-        if num not in elements
-    ]
+    for item in deleted_list:
+        init_list.remove(item)
 
 
-def quick_cutting(remnants: list[float], products: list[float], cutting_width: float) -> dict[float, list[float]]:
+def quick_cutting(remnants: list[float], products: list[float], cutting_width: float = 0.003
+                  ) -> dict[tuple[float, int], list[list[float]]]:
     """
-    Функция для быстрого поиска лучшего реза. Функция берет остатки по возрастанию и для каждого из них ищет оптимальный
-    рез.
+    Функция производит быстрый расчет для реза списка остатков под изделия из списка. Для этого функция берет
+    остатки по возрастанию и оптимально подбирает изделия.
     :param remnants: Список остатков.
-    :param products: Список ширин изделий.
+    :param products: Список изделий.
     :param cutting_width: Ширина реза.
-    :return: Словарь с результатом. Ключ - ширина остатка, значение - список изделий под этот рез.
+    :return: Словарь. Ключи - кортежи остатков, где float - ширина, int - кол-во остатков с такой шириной
+    (кортежи взяты, чтобы решить проблему, если есть несколько остатков одной ширины); списки списков ширин изделий
+    (если несколько остатков, то в список будет содержать несколько списков изделий).
     """
-    result_dict: dict[float, list[float]] = dict()
-    current_products: list[float] = copy(products)
+    result_dict: dict[tuple[float, int], list[list[float]]] = dict()
+    cur_products: list[float] = copy(products)
 
-    # Будем брать остатки по возрастанию
-    for remnant in sorted(remnants):
-        # Для каждого остатка применим функцию min_rest_cutting со списком оставшихся изделий
-        result_dict[remnant] = min_rest_cutting(remnant=remnant, products=current_products, cutting_width=cutting_width)
-        # Из текущего списка изделий удалим уже подобранные.
-        current_products = remove_elements_from_list(current_products, result_dict[remnant])
+    # 1) сгенерируем список ключей
+    keys: list[tuple[float, int]] = [
+        # (ширина остатка, кол-во остатков с такой шириной)
+        (remnant, remnants.count(remnant))
+        for remnant in set(remnants)
+    ]  # Список ключей для генерации словаря
 
-        # Если изделия закончились, прервем цикл
-        if len(current_products) == 0:
+    # 2) сгенерируем значения для ключей и словарь
+    for tuple_remnant in sorted(keys, key=lambda x: x[0]):
+        # если изделия закончились - выйдем из цикла
+        if not cur_products:
             break
 
+        values: list[list[float]] = list()
+
+        for _ in range(tuple_remnant[1]):
+            # для каждого остатка одной ширины проведем оптимальный рез и добавим в список значений
+            rest_cutting: list[float] = min_rest_cutting(tuple_remnant[0], cur_products, cutting_width)
+            values.append(rest_cutting)
+            # отрезанные изделия удалим из текущего списка изделий
+            remove_list_from_list(cur_products, rest_cutting)
+            # если изделия закончились - прервем цикл
+            if not cur_products:
+                break
+        result_dict[tuple_remnant] = values
+
     return result_dict
-
-
-# number_products: int = 10
-# number_rests: int = 20
-#
-# rests: list[float] = [round(uniform(30, 40), 2) for _ in range(number_rests)]
-# products: list[float] = [round(uniform(10, 20), 2) for _ in range(number_products)]
-#
-# result_dict: dict[float, list[float]] = quick_cutting(rests, products, cutting_width=0.05)
-# for key, value in result_dict.items():
-#     print('{}: {}, ост: {}'.format(key, value, round(key - sum(value), 3)))
