@@ -93,3 +93,63 @@ def quick_cutting(remnants: list[float], products: list[float], cutting_width: f
         result_dict[tuple_remnant] = values
 
     return result_dict
+
+
+def middle_cutting(remnants: list[float], products: list[float], cutting_width: float = 0.003
+                   ) -> dict[tuple[float, int], list[list[float]]]:
+    """
+    Функция производит расчет со средней скоростью для реза списка остатков под изделия из списка.
+    Для этого функция берет остаток, для которого рез будет наиболее оптимальным. Таким образом пробегает все остатки.
+    :param remnants: Список остатков.
+    :param products: Список изделий.
+    :param cutting_width: Ширина реза.
+    :return: Словарь. Ключи - кортежи остатков, где float - ширина, int - кол-во остатков с такой шириной
+    (кортежи взяты, чтобы решить проблему, если есть несколько остатков одной ширины); списки списков ширин изделий
+    (если несколько остатков, то в список будет содержать несколько списков изделий).
+    """
+    result_dict: dict[tuple[float, int], list[list[float]]] = dict()
+    cur_products: list[float] = copy(products)
+
+    # 1) сгенерируем список ключей
+    keys: list[tuple[float, int]] = [
+        # (ширина остатка, кол-во остатков с такой шириной)
+        (remnant, remnants.count(remnant))
+        for remnant in set(remnants)
+    ]  # Список ключей для генерации словаря
+    # 1.1) сделаем вспомогательную копию
+    cur_keys: list[tuple[float, int]] = copy(keys)
+
+    # 2) В цикле будем искать остатки, для которых рез будет наиболее оптимальным. Если остатков одной длины
+    # больше одного, то подбираем оптимальный рез для одного. Повторяем итерацию.
+    # Если оптимальным снова станет остаток с той же длиной, то в значение словаря добавляем список
+    while True:
+        # Условие выхода их цикла
+        if not cur_keys or not cur_products:
+            break
+
+        # Найдем оптимальный рез из списка оставшихся ключей и изделий
+        min_rest: float = max(remnants)
+        opt_remnant: tuple[float,  int] = (0.0, 0)
+        opt_selection: list[float] = []
+        for remnant in cur_keys:
+            best_selection: list[float] = min_rest_cutting(remnant[0], cur_products)
+
+            if remnant[0] - sum(best_selection) < min_rest:
+                min_rest = remnant[0] - sum(best_selection)
+                opt_remnant = remnant
+                opt_selection = best_selection
+
+        # добавим в итоговый словарь найденные значения
+        if opt_remnant in result_dict:
+            result_dict[opt_remnant].append(opt_selection)
+        else:
+            result_dict[opt_remnant] = [opt_selection]
+
+        # Если длина списка наборов равна количеству остатков данной длины,
+        # то данный остаток удалим из текущего списка остатков
+        if opt_remnant[1] == len(result_dict[opt_remnant]):
+            cur_keys.remove(opt_remnant)
+        # удалим из текущего списка изделий сохраненный список изделий
+        remove_list_from_list(cur_products, opt_selection)
+
+    return result_dict
