@@ -1,15 +1,13 @@
 """
 Модуль для тестирования метода calculator.quick_cutting
 """
-from business import calculator
+from business.calculator import MiddleCutting
 import random
 
 
 def print_result(products: list[float], rests: list[float]):
-    res_dict: dict[tuple[float, int], list[list[float]]] = calculator.middle_cutting(
-        remnants=rests,
-        products=products
-    )
+    middle_cutting: MiddleCutting = MiddleCutting(remnants=rests, products=products)
+    res_dict: dict[tuple[float, int], list[list[float]]] = middle_cutting.cut()
     for remnant, opt_products in res_dict.items():
         print('{}: {} (остаток: {})'.format(remnant, opt_products, round(remnant[0] - sum(opt_products[0]), 3)))
 
