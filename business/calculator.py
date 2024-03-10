@@ -2,50 +2,114 @@ from random import uniform
 from copy import copy
 
 
-def min_rest_cutting(remnant: float, products: list[float], cutting_width: float = 0.003) -> list[float]:
+class Cutting:
     """
-    Функция рекурсивно перебирает все остатки для поиска наилучшего реза.
-    :param remnant: Длина остатка.
-    :param products: Список ширин изделий.
-    :param cutting_width: Ширина реза.
-    :return: Список ширин изделий, которые лучше всего использовать для данного остатка
+    Базовый класс для расчета реза остатков под изделия
+
+    Args:
+        remnants (list[float]) - список ширин остатков профилей
+        products (list[float]) - список ширин изделий, которые нужно получить
+        cutting_width (float) - ширина реза
     """
-    # Сначала соберем изделия, которые меньше длины остатков
-    small_products: list[float] = [
-        product
-        for product in products
-        if product < remnant
-    ]
+    def __init__(self, remnants: list[float], products: list[float], cutting_width: float = 0.003) -> None:
+        self.__remnants: list[float] = remnants
+        self.__products: list[float] = products
+        self.__cutting_width: float = cutting_width
 
-    # Если small_products пустой или имеет один элемент, то это условие остановки рекурсии
-    if len(small_products) <= 1:
-        return small_products
+    def get_remnants(self) -> list[float]:
+        """
+        Геттер для получения списка остатков
+        :return: __remnants
+        :rtype: list[float]
+        """
+        return self.__remnants
 
-    result_min_rest: float = remnant
-    result_selection: list[float] = list()
+    def get_products(self) -> list[float]:
+        """
+        Геттер для получения списка изделий
+        :return: __products
+        :rtype: list[float]
+        """
+        return self.__products
 
-    for num_product, product in enumerate(small_products):
-        current_selection: list[float] = [product]
-        current_selection.extend(min_rest_cutting(remnant=remnant - product - cutting_width,
-                                                  products=small_products[num_product + 1:]))
+    def get_cutting_width(self) -> float:
+        """
+        Геттер для получения ширины реза
+        :return: __cutting_width
+        :rtype: float
+        """
+        return self.__cutting_width
 
-        # Если result_min_rest больше чем разность остатка и суммы выбранных длин, то выбор не эффективен
-        if result_min_rest > remnant - sum(current_selection) - cutting_width * len(current_selection):
-            result_min_rest = remnant - sum(current_selection) - cutting_width * len(current_selection)
-            result_selection = current_selection
+    def min_rest_cutting(self, remnant: float, products: list[float]) -> list[float]:
+        """
+        Функция рекурсивно перебирает все изделий для поиска наилучшего реза данного остатка
+        :param remnant: Длина остатка
+        :type remnant: float
+        :param products: Список оставшихся изделий
+        :type products: list[float]
+        :return: Список ширин изделий, которые лучше всего использовать для данного остатка
+        :rtype: list[float]
+        """
+        # Сначала соберем изделия, которые меньше длины остатков
+        small_products: list[float] = [
+            product
+            for product in products
+            if product < remnant - self.get_cutting_width()
+        ]
 
-    return result_selection
+        # Если small_products пустой или имеет один элемент, то это условие остановки рекурсии
+        if len(small_products) <= 1:
+            return small_products
 
+        result_min_rest: float = remnant
+        result_selection: list[float] = list()
 
-def remove_list_from_list(init_list: list[float], deleted_list: list[float]):
-    """
-    Функция удаляет все элементы deleted_list из init_list.
-    :param init_list: Начальный список.
-    :param deleted_list: Список элементов, которые нужно удалить.
-    :return: Ничего, функция редактирует init_list.
-    """
-    for item in deleted_list:
-        init_list.remove(item)
+        for num_product, product in enumerate(small_products):
+            current_selection: list[float] = [product]
+            current_selection.extend(self.min_rest_cutting(remnant=remnant - product - self.get_cutting_width(),
+                                                           products=small_products[num_product + 1:]))
+
+            # Если result_min_rest больше чем разность остатка и суммы выбранных длин, то выбор не эффективен
+            if result_min_rest > remnant - sum(current_selection) - self.get_cutting_width() * len(current_selection):
+                result_min_rest = remnant - sum(current_selection) - self.get_cutting_width() * len(current_selection)
+                result_selection = current_selection
+
+        return result_selection
+
+    @staticmethod
+    def remove_list_from_list(init_list: list[float], deleted_list: list[float]):
+        """
+        Функция удаляет все элементы deleted_list из init_list.
+        :param init_list: Начальный список.
+        :param deleted_list: Список элементов, которые нужно удалить.
+        :return: Ничего, функция редактирует init_list.
+        """
+        for item in deleted_list:
+            init_list.remove(item)
+
+    def generate_keys(self) -> list[tuple[float, int]]:
+        """
+        Так как все методы расчета возвращают результат в одном и том же виде (в виде словаря),
+        то у всех повторяется код генерации ключей для этого словаря. Этот метод генерирует ключи для выходного словаря.
+        :return: Список ключей для выходного словаря
+        :rtype: list[tuple[float, int]]
+        """
+        remnants: list[float] = self.get_remnants()
+
+        return [
+            # (ширина остатка, кол-во остатков с такой шириной)
+            (remnant, remnants.count(remnant))
+            for remnant in set(remnants)
+        ]
+
+    def cut(self) -> dict[tuple[float, int], list[list[float]]]:
+        """
+        Заготовка для функции реза
+        :return: Словарь. Ключи - кортежи остатков, где float - ширина, int - кол-во остатков с такой шириной
+        (кортежи взяты, чтобы решить проблему, если есть несколько остатков одной ширины); списки списков ширин изделий
+        (если несколько остатков, то в список будет содержать несколько списков изделий).
+        """
+        pass
 
 
 def quick_cutting(remnants: list[float], products: list[float], cutting_width: float = 0.003
@@ -64,11 +128,7 @@ def quick_cutting(remnants: list[float], products: list[float], cutting_width: f
     cur_products: list[float] = copy(products)
 
     # 1) сгенерируем список ключей
-    keys: list[tuple[float, int]] = [
-        # (ширина остатка, кол-во остатков с такой шириной)
-        (remnant, remnants.count(remnant))
-        for remnant in set(remnants)
-    ]  # Список ключей для генерации словаря
+    keys: list[tuple[float, int]] = generate_keys(remnants)  # Список ключей для генерации словаря
 
     # 2) сгенерируем значения для ключей и словарь
     for tuple_remnant in sorted(keys, key=lambda x: x[0]):
@@ -111,11 +171,7 @@ def middle_cutting(remnants: list[float], products: list[float], cutting_width: 
     cur_products: list[float] = copy(products)
 
     # 1) сгенерируем список ключей
-    keys: list[tuple[float, int]] = [
-        # (ширина остатка, кол-во остатков с такой шириной)
-        (remnant, remnants.count(remnant))
-        for remnant in set(remnants)
-    ]  # Список ключей для генерации словаря
+    keys: list[tuple[float, int]] = generate_keys(remnants)  # Список ключей для генерации словаря
     # 1.1) сделаем вспомогательную копию
     cur_keys: list[tuple[float, int]] = copy(keys)
 
@@ -132,10 +188,10 @@ def middle_cutting(remnants: list[float], products: list[float], cutting_width: 
         opt_remnant: tuple[float,  int] = (0.0, 0)
         opt_selection: list[float] = []
         for remnant in cur_keys:
-            best_selection: list[float] = min_rest_cutting(remnant[0], cur_products)
+            best_selection: list[float] = min_rest_cutting(remnant[0], cur_products, cutting_width)
 
-            if remnant[0] - sum(best_selection) < min_rest:
-                min_rest = remnant[0] - sum(best_selection)
+            if remnant[0] - sum(best_selection) - cutting_width * len(best_selection) < min_rest:
+                min_rest = remnant[0] - sum(best_selection) - cutting_width * len(best_selection)
                 opt_remnant = remnant
                 opt_selection = best_selection
 
