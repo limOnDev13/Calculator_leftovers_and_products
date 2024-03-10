@@ -249,6 +249,41 @@ class BestCutting(Cutting):
     def __init__(self, remnants: list[float], products: list[float], cutting_width: float = 0.003) -> None:
         super().__init__(remnants, products, cutting_width)
 
+    def __get_all_combos(self, remnant: float, products: list[float],
+                         combos: list[list[float]], level: int = 0) -> list[float]:
+        """
+        Метод рекурсивно находит всевозможные комбинации изделий для данного остатка
+        :param remnant: Ширина остатка
+        :type remnant: float
+        :param products: Список рабочих ширин изделий. Нужен для рекурсии.
+        Начальное значение - все изделия, которые меньше чем остаток
+        :type products: list[float]
+        :param combos: Параметр для хранения общего результата. В него будут добавляться все комбинации
+        :type combos: list[list[float]]
+        :param level: Уровень рекурсии
+        :type level: int
+        :return: комбинацию (список) изделий, подходящих под этот остаток
+        """
+        # Если список пуст - выход из рекурсии
+        if not products:
+            return []
+
+        for product in products:
+            copy_products: list[float] = copy(products)  # Копия списка изделий
+            rest_remnant: float = remnant - product - self.get_cutting_width()  # ширина остатка после реза
+            self.remove_list_from_list(copy_products, [product])  # Удалим из копии списка изделий отрезанное изделие
+
+            # Соберем комбинацию изделия
+            res_list: list[float] = [product]
+            res_list.extend(self.__get_all_combos(remnant=rest_remnant,
+                                                  products=[product
+                                                            for copy_product in copy_products
+                                                            if copy_product <= rest_remnant - self.get_cutting_width()],
+                                                  combos=combos,
+                                                  level=level + 1))
+            if level == 0:  # Если мы находимся на 0 уровне рекурсии - добавим собранную комбинацию в combos
+                combos.append(res_list)
+
     def cut(self) -> dict[tuple[float, int], list[list[float]]]:
         """
         Функция производит наилучший за счет перебора всевозможных комбинаций расчет для реза списка остатков
@@ -258,3 +293,12 @@ class BestCutting(Cutting):
         (если несколько остатков, то в список будет содержать несколько списков изделий)
         :rtype: dict[tuple[float, int], list[list[float]]]
         """
+        # 1)Из списка остатков сгенерируем список ключей для результатного словаря
+        keys: list[tuple[float, int]] = self.generate_keys()
+
+        # 2) Для каждого ключа создадим список комбинаций (списков) изделий, которые можно получить из данных остатков.
+        # Для этого будем обходить рекурсивно весь список изделий
+        for remnant, number_remnants in keys:
+            combos: list[list[float]] = list()
+            self.__get_all_combos(remnant, self.get_products(), combos)
+            print(f'{remnant}: {combos}')
