@@ -1,15 +1,13 @@
 """
 Модуль для тестирования метода calculator.quick_cutting
 """
-from business import calculator
+from business.calculator import QuickCutting
 import random
 
 
 def print_result(products: list[float], rests: list[float]):
-    res_dict: dict[tuple[float, int], list[list[float]]] = calculator.quick_cutting(
-        remnants=rests,
-        products=products
-    )
+    quick_cutting: QuickCutting = QuickCutting(remnants=rests, products=products)
+    res_dict: dict[tuple[float, int], list[list[float]]] = quick_cutting.cut()
     for remnant, opt_products in res_dict.items():
         print('{}: {}'.format(remnant, opt_products))
 
