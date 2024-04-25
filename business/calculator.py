@@ -1,5 +1,4 @@
-from random import uniform
-from copy import copy
+from copy import copy, deepcopy
 
 
 class Cutting:
@@ -75,17 +74,6 @@ class Cutting:
                 result_selection = current_selection
 
         return result_selection
-
-    @staticmethod
-    def remove_list_from_list(init_list: list[float], deleted_list: list[float]):
-        """
-        Функция удаляет все элементы deleted_list из init_list.
-        :param init_list: Начальный список.
-        :param deleted_list: Список элементов, которые нужно удалить.
-        :return: Ничего, функция редактирует init_list.
-        """
-        for item in deleted_list:
-            init_list.remove(item)
 
     def generate_keys(self) -> list[tuple[float, int]]:
         """
@@ -195,20 +183,20 @@ class MiddleCutting(Cutting):
         # 1) сгенерируем список ключей
         keys: list[tuple[float, int]] = self.generate_keys()  # Список ключей для генерации словаря
         # 1.1) сделаем вспомогательную копию
-        cur_keys: list[tuple[float, int]] = copy(keys)
+        cur_keys: list[tuple[float, int]] = [key for key in self.generate_keys() if key[0] > min(cur_products)]
 
         # 2) В цикле будем искать остатки, для которых рез будет наиболее оптимальным. Если остатков одной длины
         # больше одного, то подбираем оптимальный рез для одного. Повторяем итерацию.
         # Если оптимальным снова станет остаток с той же длиной, то в значение словаря добавляем список
         while True:
             # Условие выхода их цикла
-            if not cur_keys or not cur_products:
+            if not cur_products or not cur_keys:
                 break
 
             # Найдем оптимальный рез из списка оставшихся ключей и изделий
             min_rest: float = max(self.get_remnants())
             opt_remnant: tuple[float,  int] = (0.0, 0)
-            opt_selection: list[float] = []
+            opt_selection: list[float] = list()
             for remnant in cur_keys:
                 best_selection: list[float] = self.min_rest_cutting(remnant[0], cur_products)
 
