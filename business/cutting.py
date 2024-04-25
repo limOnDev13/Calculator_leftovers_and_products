@@ -120,7 +120,12 @@ class Cutting(ABC):
         :return: Отредактированный начальный список
         :rtype: list
         """
-        return [element for element in init_array if element not in removed_list]
+        result_array: list[float] = deepcopy(init_array)
+
+        for elem in removed_list:
+            result_array.remove(elem)
+
+        return result_array
 
 
 if __name__ == '__main__':
