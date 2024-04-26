@@ -1,25 +1,17 @@
 """
-Модуль для тестирования метода calculator.quick_cutting
+Модуль для тестирования метода business.best_cutting.BestCutting.cut()
 """
-from business.calculator import BestCutting
+from business.best_cutting import BestCutting
 import random
+from test_algorithm import TestAlgorithm
 
 
-def print_result(products: list[float], rests: list[float]):
-    best_cutting: BestCutting = BestCutting(remnants=rests, products=products)
-    res_dict: dict[tuple[float, int], list[list[float]]] = best_cutting.cut()
-    for remnant, opt_products in res_dict.items():
-        print('{}: {} (остаток: {})'.format(remnant, opt_products, round(remnant[0] - sum(opt_products[0]), 3)))
+test_best_cut: TestAlgorithm = TestAlgorithm(algorithm_cls=BestCutting)
 
+# Тест - кол-во изделий = 10, кол-во остатков = 5
+products: list[float] = [round(random.uniform(1, 6), 3) for _ in range(10)]
+remnants: list[float] = [round(random.uniform(1, 6), 3) for _ in range(5)]
+remnants.extend([6 for _ in range(10)])
 
-print('Случайные значения')
-rand_products: list[float] = [round(random.uniform(0.1, 3.0), 3) for _ in range(random.randint(1, 20))]
-rand_rests: list[float] = [round(random.uniform(0.1, 4.0), 3) for _ in range(random.randint(1, 20))]
-best_cut: BestCutting = BestCutting(rand_rests, rand_products)
-best_cut.cut()
-# print_result(rand_products, rand_rests)
-
-print('\nТест 1')
-products_test1: list[float] = [0.1, 0.1, 0.2, 0.3]
-rests_test1: list[float] = [0.15, 0.15, 0.15, 0.4, 0.05]
-# print_result(products_test1, rests_test1)
+best_cut: BestCutting = BestCutting(remnants=remnants, products=products, number_whole_profiles=100)
+test_best_cut.beautiful_result(best_cut.cut())
