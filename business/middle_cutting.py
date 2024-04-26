@@ -48,10 +48,6 @@ class MiddleCutting(Cutting):
             current_products = self.remove_list_from_array(current_products, best_cutting)
             # Некоторые остатки могут быть меньше всех оставшихся изделий - их тоже уберем
             if len(current_products) >= 1:
-                # min_product: float = min(current_products)
-                # current_remnants: list[tuple[float, int]] = [remnant
-                #                                              for remnant in current_remnants
-                #                                              if remnant[0] >= min_product]
                 current_remnants = {remnant for remnant in current_remnants if remnant[0] >= min(current_products)}
 
         return cutting_scheme
