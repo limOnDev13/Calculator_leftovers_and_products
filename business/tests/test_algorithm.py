@@ -253,7 +253,7 @@ class TestAllAlgorithm:
         return algorithm_wastes
 
     def dependence_different_algorithms(self, whole_profile_length: float = 6,
-                                        min_remnant_length: float = 1, limit_num_rests: int = 10,
+                                        min_remnant_length: float = 1, num_rests: int = 10,
                                         print_progress: bool = False, print_cut: bool = False
                                         ) -> dict[str, dict[int, float]]:
         """
@@ -262,8 +262,8 @@ class TestAllAlgorithm:
         :type whole_profile_length: float
         :param min_remnant_length: Минимальная длина остатка
         :type min_remnant_length: float
-        :param limit_num_rests: Предел случайного количества остатков
-        :type limit_num_rests: int
+        :param num_rests: Количество остатков в наличии. Отличие алгоритмов заметно при росте этого количества
+        :type num_rests: int
         :param print_progress: Если True - пишет прогресс выполнения
         :type print_progress: bool
         :param print_cut: Если True, то будут расписываться все распилы
@@ -285,7 +285,7 @@ class TestAllAlgorithm:
                 products: list[float] = [round(random.uniform(min_remnant_length, whole_profile_length), 3)
                                          for _ in range(number_products)]
                 remnants: list[float] = [round(random.uniform(min_remnant_length, whole_profile_length), 3)
-                                         for _ in range(random.randint(0, limit_num_rests))]
+                                         for _ in range(num_rests)]
                 # Добавим в остатки целые профиля, чтобы точно все изделия были посчитаны
                 remnants.extend([whole_profile_length for _ in range(number_products)])
 
@@ -301,13 +301,15 @@ class TestAllAlgorithm:
         return result_dependence
 
     @classmethod
-    def draw_graphs(cls, graphs: dict[str, dict[int, float]], file_name: str) -> None:
+    def draw_graphs(cls, graphs: dict[str, dict[int, float]], file_name: str, show_pict: bool = False) -> None:
         """
         Функция рисует графики на одном рисунке
         :param graphs: Словарь с зависимостями. Ключи - названия графиков
         :type graphs: dict[str, dict[int, float]]
         :param file_name: Имя файла, в котором будет сохранено изображение
         :type file_name: str
+        :param show_pict: Если True, то картинка будет показана
+        :type show_pict: bool
         :return: None
         """
         colors: list[str] = ['red', 'green', 'blue', 'black']
@@ -319,11 +321,17 @@ class TestAllAlgorithm:
         plt.ylabel('Средний процент отхода, %')
         plt.title('Сравнение зависимостей среднего процента отхода\nот количества изделий в разных алгоритмах')
         plt.legend()
-        figure = plt.gcf()
-        plt.show()
-        figure.savefig(file_name)
 
-    def draw_graphs_from_file(self, input_file: str, output_file: str, check_split: bool = False) -> None:
+        if show_pict:
+            figure = plt.gcf()
+            plt.show()
+            figure.savefig(file_name)
+        else:
+            plt.savefig(file_name)
+            plt.close()
+
+    def draw_graphs_from_file(self, input_file: str, output_file: str, check_split: bool = False,
+                              show_pict: bool = False) -> None:
         """
         Метод берет данные из input_file, рисует график и сохраняет рисунок в utput_file
         :param input_file: Имя файла с зависимостями
@@ -331,6 +339,9 @@ class TestAllAlgorithm:
         :param output_file: Имя файла, под которым будет сохранен нарисованный график
         :type output_file: str
         :param check_split: Если True, то будет печатать разбиение строк из input_file для проверки
+        :type check_split: bool
+        :param show_pict: Если True, то картинка будет показана
+        :type show_pict: bool
         :return: None
         """
         graphs: dict[str, dict[int, float]] = dict()
@@ -364,7 +375,7 @@ class TestAllAlgorithm:
                     graphs[name][x] = data
 
         # Нарисуем графики
-        self.draw_graphs(graphs, output_file)
+        self.draw_graphs(graphs, output_file, show_pict=show_pict)
 
 
 if __name__ == '__main__':
@@ -373,28 +384,32 @@ if __name__ == '__main__':
         algorithms=[QuickCutting, MiddleCutting],
         test_cls=TestAlgorithm,
         max_num_products=max_num_products,
-        number_tests=100
+        number_tests=200
     )
 
-    difference_algorithms: dict[str, dict[int, float]] = test_all_algorithms.dependence_different_algorithms(
-        print_progress=True,
-        print_cut=False
-    )
+    max_num_rests: int = 70
+    step_num_rests: int = 10
+    for num_rests in range(0, max_num_rests, step_num_rests):
+        difference_algorithms: dict[str, dict[int, float]] = test_all_algorithms.dependence_different_algorithms(
+            print_progress=True,
+            print_cut=False,
+            num_rests=num_rests
+        )
 
-    test_all_algorithms.draw_graphs(difference_algorithms, 'difference_between_algorithms.jpg')
+        test_all_algorithms.draw_graphs(difference_algorithms, f'difference_between_algorithms_{num_rests}.jpg')
 
-    with open('quick_middle_dependence.txt', 'w', encoding='utf-8') as file:
-        print(QuickCutting.__name__, '\t', MiddleCutting.__name__)
-        file.write(f'{QuickCutting.__name__}\t{MiddleCutting.__name__}\n')
+        with open(f'quick_middle_dependence_{num_rests}.txt', 'w', encoding='utf-8') as file:
+            print(QuickCutting.__name__, '\t', MiddleCutting.__name__)
+            file.write(f'{QuickCutting.__name__}\t{MiddleCutting.__name__}\n')
 
-        for num in range(1, max_num_products + 1):
-            print('{num}: {quick_cut} | {middle_cut}'.format(
-                num=num,
-                quick_cut=difference_algorithms[QuickCutting.__name__][num],
-                middle_cut=difference_algorithms[MiddleCutting.__name__][num]
-            ))
-            file.write('{num}: {quick_cut} | {middle_cut}\n'.format(
-                num=num,
-                quick_cut=difference_algorithms[QuickCutting.__name__][num],
-                middle_cut=difference_algorithms[MiddleCutting.__name__][num]
-            ))
+            for num in range(1, max_num_products + 1):
+                print('{num}: {quick_cut} | {middle_cut}'.format(
+                    num=num,
+                    quick_cut=difference_algorithms[QuickCutting.__name__][num],
+                    middle_cut=difference_algorithms[MiddleCutting.__name__][num]
+                ))
+                file.write('{num}: {quick_cut} | {middle_cut}\n'.format(
+                    num=num,
+                    quick_cut=difference_algorithms[QuickCutting.__name__][num],
+                    middle_cut=difference_algorithms[MiddleCutting.__name__][num]
+                ))
