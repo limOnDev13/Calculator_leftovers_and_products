@@ -15,7 +15,7 @@ class QuickCutting(Cutting):
         и так по очереди рассчитывает распил для всех изделий
         :return: Распил. Имеет тип словаря, ключи - кортежи, где первый элемент - длина остатка,
         второй - количество остатков данной длины. Значения словаря - список списков изделий для одного такого остатка
-added a separate file with the QuickCutting class        :rtype: dict[tuple[float, int], list[list[float]]]
+        :rtype: dict[tuple[float, int], list[list[float]]]
         """
         cutting_scheme: dict[tuple[float, int], list[list[float]]] = dict()
         current_remnants: set[tuple[float, int]] = self.generate_keys(self.remnants, min(self.products))

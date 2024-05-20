@@ -9,17 +9,19 @@ class Cutting(ABC):
 
     Args:
         remnants (list[float]) - список остатков
-        products (list[float]) - список изделий
-       Rewrote the Cutting module number_whole_profiles (int) - количество цельных профилей
+        in_products (list[float]) - список изделий (как указано в наряде)
+        number_whole_profiles (int) - количество цельных профилей
+        correction (float) - Поправка к ширине изделий
         cutting_width (float) - ширина реза
         whole_profile_length (float) - длина цельного профиля
         min_rest_length (float) - Минимальная длина остатка. Остатки меньше - отход
     """
-    def __init__(self, *, remnants: list[float], products: list[float], number_whole_profiles: int,
-                 cutting_width: float = 0.003, whole_profile_length: float = 6.0,
+    def __init__(self, *, remnants: list[float], in_products: list[float], number_whole_profiles: int,
+                 correction: float, cutting_width: float = 0.003, whole_profile_length: float = 6.0,
                  min_rest_length: float = 1.0) -> None:
         self.__remnants: list[float] = remnants
-        self.__products: list[float] = products
+        self.__in_products: list[float] = in_products
+        self.__products: list[float] = [product - correction for product in in_products]
         self.__number_whole_profiles: int = number_whole_profiles
         self.__cutting_width: float = cutting_width
         self.__whole_profile_length: float = whole_profile_length
