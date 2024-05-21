@@ -51,6 +51,11 @@ class Cutting(ABC):
         """Геттер для self.__min_rest_length"""
         return self.__min_rest_length
 
+    @property
+    def number_whole_profiles(self) -> int:
+        """Геттер для self.__number_whole_profiles"""
+        return self.__number_whole_profiles
+
     def calculate_min_waste(self, remnant: float, products: list[float]) -> list[float]:
         """
         Метод ищет оптимальный распил для данного остатка на данный список изделий
