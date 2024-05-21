@@ -1,6 +1,5 @@
 from copy import deepcopy
 from abc import ABC, abstractmethod
-from typing import Literal
 
 
 class Cutting(ABC):
@@ -132,8 +131,9 @@ class Cutting(ABC):
 
 if __name__ == '__main__':
     # Проверка Cutting.calculate_min_waste
-    remnant: float = 0.01
-    remnants: list[float] = [5.999, 3.252, 3.635, 5.691, 2.874]
-    products: list[float] = [4.586, 1.962, 4.552, 2.164, 1.255, 4.587, 6, 6, 6, 6, 6, 0.5, 0.4, 1.1]
-    cutting: Cutting = Cutting(remnants=remnants, products=products, number_whole_profiles=5)
-    print(cutting.calculate_min_waste(remnant, products))
+    test_remnant: float = 0.01
+    test_remnants: list[float] = [5.999, 3.252, 3.635, 5.691, 2.874]
+    test_products: list[float] = [4.586, 1.962, 4.552, 2.164, 1.255, 4.587, 6, 6, 6, 6, 6, 0.5, 0.4, 1.1]
+    cutting: Cutting = Cutting(
+        remnants=test_remnants, in_products=test_products, number_whole_profiles=5, correction=0.001)
+    print(cutting.calculate_min_waste(test_remnant, test_products))
