@@ -13,6 +13,7 @@ from view.lexicon.lexicon_ru import LABELS, BUTTONS, ERROR_LABELS
 from view.view_exceptions import InputListWidthException, InputIntExc, InputFloatExc
 from business.quick_cutting import QuickCutting
 from business.tests.test_algorithm import TestAlgorithm
+from business.business_exceptions import NoRemnantsError
 
 
 class SimpleCutCalc:
@@ -190,6 +191,13 @@ class SimpleCutCalc:
                 title=exc.title,
                 message=exc.__str__()
             )
+        except NoRemnantsError as exc:
+            msg_box.showerror(
+                title=exc.title,
+                message=exc.__str__()
+            )
+            beautiful_print: TestAlgorithm = TestAlgorithm(QuickCutting)
+            print(beautiful_print.beautiful_result(exc.current_cheme))
 
     def __reset_button(self) -> None:
         if self.__input_products_text is not None:
