@@ -59,6 +59,7 @@ class MiddleCutting(Cutting):
 
         # В словарь добавляются ключи, в которых указываются количества имеющихся остатков
         # Но при этом в схеме могут использоваться не все остатки одной длины. Эту ситуацию необходимо поправить
-        beautiful_scheme: CutScheme = CutScheme(cutting_scheme)
+        beautiful_scheme: CutScheme = CutScheme(
+            cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width)
         beautiful_scheme.restore_order()  # Избавляемся от неиспользованных остатков
         return beautiful_scheme.cut_scheme
