@@ -1,8 +1,9 @@
 """Модуль отвечает за окно с рассчитанной схемой распила"""
-from tkinter import Tk
+from tkinter import Tk, filedialog
 from tkinter.ttk import Label, Frame, Button
+from typing import Callable
 
-from view.lexicon.lexicon_ru import LABELS
+from view.lexicon.lexicon_ru import LABELS, BUTTONS
 from business.cut_scheme import CutScheme
 
 
@@ -35,6 +36,8 @@ def window_with_cut_cheme(cut_scheme: CutScheme, title: str) -> None:
     percent_waste_text: Label = Label(frame_with_percent_waste, text=LABELS['percent_waste'])
     percent_waste_result: Label = Label(frame_with_percent_waste, text=str(percent_waste))
 
+    save_button: Button = Button(window, text=BUTTONS['save'], command=save_scheme(cut_scheme))
+
     # Упакуем все объекты
     result_text_label.pack(anchor='nw', padx=5, pady=5)
     cut_scheme_label.pack(anchor='nw', padx=5, pady=5)
@@ -49,11 +52,19 @@ def window_with_cut_cheme(cut_scheme: CutScheme, title: str) -> None:
     percent_waste_text.grid(row=0, column=0, padx=5, pady=5)
     percent_waste_result.grid(row=0, column=1, padx=5, pady=5)
 
+    save_button.pack(anchor='n', padx=5, pady=5)
 
-def save_scheme(cut_scheme: CutScheme) -> None:
+
+def save_scheme(cut_scheme: CutScheme) -> Callable:
     """
     Функция сохраняет схему распила в файл
     :param cut_scheme:
     :return:
     """
-    pass
+    def saving_func() -> None:
+        filepath = filedialog.asksaveasfilename(defaultextension='txt', initialfile='Схема распила')
+        if filepath != "":
+            with open(filepath, "w", encoding='utf-8') as file:
+                file.write(cut_scheme.__str__())
+
+    return saving_func
