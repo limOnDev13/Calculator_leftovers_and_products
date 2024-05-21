@@ -14,7 +14,7 @@ from view.view_exceptions import InputListWidthException, InputIntExc, InputFloa
 from business.cutting import Cutting
 from business.quick_cutting import QuickCutting
 from business.middle_cutting import MiddleCutting
-from business.tests.test_algorithm import TestAlgorithm
+from business.cut_scheme import CutScheme
 from business.business_exceptions import NoRemnantsError
 
 
@@ -182,8 +182,10 @@ class SimpleCutCalc:
                         number_whole_profiles=self.__check_number_whole_profiles(),
                         cutting_width=self.__check_param(self.__cutting_width, ERROR_LABELS['cut_width'])
                     )
-                    beautiful_print: TestAlgorithm = TestAlgorithm(QuickCutting)
-                    print(beautiful_print.beautiful_result(quick_cut.cut()))
+
+                    # Распечатаем схему распила
+                    cut_scheme: CutScheme = CutScheme(quick_cut.cut())
+                    print(cut_scheme)
             except (InputFloatExc, InputIntExc) as exc:
                 msg_box.showerror(
                     title=ERROR_LABELS['error_input'] + exc.title,
@@ -199,8 +201,8 @@ class SimpleCutCalc:
                     title=exc.title,
                     message=exc.__str__()
                 )
-                beautiful_print: TestAlgorithm = TestAlgorithm(algorithm)
-                print(beautiful_print.beautiful_result(exc.current_cheme))
+
+                print(CutScheme(exc.current_cheme))
 
         return __calc_cut_with_algorithm
 
