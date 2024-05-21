@@ -19,3 +19,8 @@ class NoRemnantsError(Exception):
 
     def __str__(self) -> str:
         return 'Для данного списка изделий не хватает имеющихся остатков и цельных профилей!'
+
+
+class WrongSchemeError(NoRemnantsError):
+    def __str__(self) -> str:
+        return 'Количество распилов больше чем количество имеющихся остатков!'
