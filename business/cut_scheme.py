@@ -8,9 +8,14 @@ class CutScheme:
 
     Args:
         cut_scheme (dict[tuple[float, int], list[list[float]]]) - Схема распила
+        min_remnant (float) - Минимальная длина остатка
+        cut_width (float) - Поправка к ширине изделия
     """
-    def __init__(self, cut_scheme: dict[tuple[float, int], list[list[float]]]) -> None:
+    def __init__(self, cut_scheme: dict[tuple[float, int], list[list[float]]],
+                 min_remnant: float, cut_width: float) -> None:
         self.__cut_scheme: dict[tuple[float, int], list[list[float]]] = cut_scheme
+        self.__min_remnant: float = min_remnant
+        self.__cut_width: float = cut_width
 
     @property
     def cut_scheme(self) -> dict[tuple[float, int], list[list[float]]]:
@@ -54,13 +59,9 @@ class CutScheme:
             elif remnant[1] < len(self.__cut_scheme[remnant]):
                 raise WrongSchemeError(title='Неправильный расчет распила', current_scheme=self.__cut_scheme)
 
-    def waste(self, min_remnant: float, cut_width: float) -> tuple[float, float]:
+    def waste(self) -> tuple[float, float]:
         """
         Метод производит расчет отхода в данной схеме распила
-        :param min_remnant: Минимальная длина остатка. Меньше - идет в отход
-        :type min_remnant: float
-        :param cut_width: Ширина реза
-        :type cut_width: float
         :return: Абсолютный и относительный отходы
         :rtype: tuple[float, float]
         """
@@ -71,10 +72,10 @@ class CutScheme:
             total_remnant += remnant[0] * remnant[1]
 
             for cut in cuttings:
-                total_waste += cut_width * len(cut)  # Учет стружки
-                waste: float = remnant[0] - sum(cut) - cut_width * len(cut)
+                total_waste += self.__cut_width * len(cut)  # Учет стружки
+                waste: float = remnant[0] - sum(cut) - self.__cut_width * len(cut)
                 # Если остаток меньше, чем минимальная длина остатка - в отход
-                if waste < min_remnant:
+                if waste < self.__min_remnant:
                     total_waste += waste
 
         waste_percent: float = round((total_waste * 100 / total_remnant), 3)
