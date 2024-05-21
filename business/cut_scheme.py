@@ -80,4 +80,4 @@ class CutScheme:
 
         waste_percent: float = round((total_waste * 100 / total_remnant), 3)
 
-        return total_waste, waste_percent
+        return round(total_waste, 3), waste_percent
