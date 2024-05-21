@@ -108,10 +108,6 @@ class SimpleCutCalc:
         profiles_str: str = profiles.get('1.0', 'end-1c')  # По этим индексам будет считан весь текст
         numbers_str: list[str] = profiles_str.split()
 
-        # Если ввод пустой - выбрасываем ошибку
-        if not numbers_str:
-            raise InputListWidthException(profiles_str, profiles_str, title_error)
-
         for number in numbers_str:
             match: Optional[Match[str]] = re.search(r'\d+\.?\d*', number)
 
@@ -173,12 +169,10 @@ class SimpleCutCalc:
             corr: float = self.__check_param(self.__correction, ERROR_LABELS['correction'])
 
             if products is not None and remnants is not None:
-                products = [product - corr
-                            for product in products]
-
                 quick_cut: QuickCutting = QuickCutting(
                     remnants=remnants,
-                    products=products,
+                    in_products=products,
+                    correction=corr,
                     min_rest_length=self.__check_param(self.__min_remnant, ERROR_LABELS['min_remnant']),
                     whole_profile_length=self.__check_param(self.__whole_profile_len, ERROR_LABELS['whole_profile']),
                     number_whole_profiles=self.__check_number_whole_profiles(),
