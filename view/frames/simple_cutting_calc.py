@@ -5,13 +5,15 @@ from tkinter.ttk import Notebook, Frame, Label, Entry, Button
 from tkinter.scrolledtext import ScrolledText
 from tkinter import StringVar
 import tkinter.messagebox as msg_box
-from typing import Optional
+from typing import Optional, Callable, Type
 import re
 from re import Match
 
 from view.lexicon.lexicon_ru import LABELS, BUTTONS, ERROR_LABELS
 from view.view_exceptions import InputListWidthException, InputIntExc, InputFloatExc
+from business.cutting import Cutting
 from business.quick_cutting import QuickCutting
+from business.middle_cutting import MiddleCutting
 from business.tests.test_algorithm import TestAlgorithm
 from business.business_exceptions import NoRemnantsError
 
@@ -82,8 +84,8 @@ class SimpleCutCalc:
         frame_with_buttons: Frame = Frame(self.__frame)
 
         buttons: list[Button] = [
-            Button(frame_with_buttons, text=BUTTONS['quick_calc'], command=self.__quick_calc_button),
-            Button(frame_with_buttons, text=BUTTONS['middle_calc']),
+            Button(frame_with_buttons, text=BUTTONS['quick_calc'], command=self.__calc_cut(QuickCutting)),
+            Button(frame_with_buttons, text=BUTTONS['middle_calc'], command=self.__calc_cut(MiddleCutting)),
             Button(frame_with_buttons, text=BUTTONS['reset'], command=self.__reset_button),
         ]
         for num, button in enumerate(buttons):
@@ -156,48 +158,51 @@ class SimpleCutCalc:
 
         return int(numer_whole_profiles)
 
-    def __quick_calc_button(self) -> None:
+    def __calc_cut(self, algorithm: Type[Cutting]) -> Callable:
         """
-        Метод срабатывает при нажатии на кнопку Быстрый расчет. Он проверяет корректность введенных значений,
-        если нет ошибок - производит расчет с помощью алгоритма QuickCutting.
+        Метод срабатывает при нажатии на кнопку Расчет распила. Он проверяет корректность введенных значений,
+        если нет ошибок - производит расчет с помощью выбранного алгоритма.
         Пока он будет выводить результат в терминал
         :return: None
         """
-        # Проверим введенные данные
-        try:
-            products: list[float] = self.__check_format_list_width(self.__input_products_text, ERROR_LABELS['products'])
-            remnants: list[float] = self.__check_format_list_width(self.__input_remnants_text, ERROR_LABELS['remnants'])
-            corr: float = self.__check_param(self.__correction, ERROR_LABELS['correction'])
+        def __calc_cut_with_algorithm() -> None:
+            # Проверим введенные данные
+            try:
+                products: list[float] = self.__check_format_list_width(self.__input_products_text, ERROR_LABELS['products'])
+                remnants: list[float] = self.__check_format_list_width(self.__input_remnants_text, ERROR_LABELS['remnants'])
+                corr: float = self.__check_param(self.__correction, ERROR_LABELS['correction'])
 
-            if products is not None and remnants is not None:
-                quick_cut: QuickCutting = QuickCutting(
-                    remnants=remnants,
-                    in_products=products,
-                    correction=corr,
-                    min_rest_length=self.__check_param(self.__min_remnant, ERROR_LABELS['min_remnant']),
-                    whole_profile_length=self.__check_param(self.__whole_profile_len, ERROR_LABELS['whole_profile']),
-                    number_whole_profiles=self.__check_number_whole_profiles(),
-                    cutting_width=self.__check_param(self.__cutting_width, ERROR_LABELS['cut_width'])
+                if products is not None and remnants is not None:
+                    quick_cut: Cutting = algorithm(
+                        remnants=remnants,
+                        in_products=products,
+                        correction=corr,
+                        min_rest_length=self.__check_param(self.__min_remnant, ERROR_LABELS['min_remnant']),
+                        whole_profile_length=self.__check_param(self.__whole_profile_len, ERROR_LABELS['whole_profile']),
+                        number_whole_profiles=self.__check_number_whole_profiles(),
+                        cutting_width=self.__check_param(self.__cutting_width, ERROR_LABELS['cut_width'])
+                    )
+                    beautiful_print: TestAlgorithm = TestAlgorithm(QuickCutting)
+                    print(beautiful_print.beautiful_result(quick_cut.cut()))
+            except (InputFloatExc, InputIntExc) as exc:
+                msg_box.showerror(
+                    title=ERROR_LABELS['error_input'] + exc.title,
+                    message=exc.__str__()
                 )
-                beautiful_print: TestAlgorithm = TestAlgorithm(QuickCutting)
-                print(beautiful_print.beautiful_result(quick_cut.cut()))
-        except (InputFloatExc, InputIntExc) as exc:
-            msg_box.showerror(
-                title=ERROR_LABELS['error_input'] + exc.title,
-                message=exc.__str__()
-            )
-        except InputListWidthException as exc:
-            msg_box.showerror(
-                title=exc.title,
-                message=exc.__str__()
-            )
-        except NoRemnantsError as exc:
-            msg_box.showerror(
-                title=exc.title,
-                message=exc.__str__()
-            )
-            beautiful_print: TestAlgorithm = TestAlgorithm(QuickCutting)
-            print(beautiful_print.beautiful_result(exc.current_cheme))
+            except InputListWidthException as exc:
+                msg_box.showerror(
+                    title=exc.title,
+                    message=exc.__str__()
+                )
+            except NoRemnantsError as exc:
+                msg_box.showerror(
+                    title=exc.title,
+                    message=exc.__str__()
+                )
+                beautiful_print: TestAlgorithm = TestAlgorithm(algorithm)
+                print(beautiful_print.beautiful_result(exc.current_cheme))
+
+        return __calc_cut_with_algorithm
 
     def __reset_button(self) -> None:
         if self.__input_products_text is not None:
