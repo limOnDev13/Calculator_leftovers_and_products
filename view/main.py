@@ -13,7 +13,7 @@ from lexicon.lexicon_ru import FRAMES
 
 def main():
     root = Tk()
-    root.title("Калькулятор профилей (демо - v1.0.0)")
+    root.title("Калькулятор профилей (v1.0.0)")
     root.geometry("450x450")
 
     notebook: Notebook = Notebook()
