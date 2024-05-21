@@ -20,7 +20,7 @@ class Cutting(ABC):
                  min_rest_length: float = 1.0) -> None:
         self.__remnants: list[float] = remnants
         self.__in_products: list[float] = in_products
-        self.__products: list[float] = [product - correction for product in in_products]
+        self.__products: list[float] = [round(product - correction, 3) for product in in_products]
         self.__number_whole_profiles: int = number_whole_profiles
         self.__cutting_width: float = cutting_width
         self.__whole_profile_length: float = whole_profile_length
