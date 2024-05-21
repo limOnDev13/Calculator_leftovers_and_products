@@ -2,18 +2,16 @@
 Модуль отвечает за работу главного окна
 """
 from tkinter.ttk import Notebook, Frame
-from tkinter import Tk
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk
 
-from frames.simple_cutting_calc import SimpleCutCalc
-from lexicon.lexicon_ru import FRAMES
+from .frames.simple_cutting_calc import SimpleCutCalc
+from .lexicon.lexicon_ru import FRAMES
 
 
 def main():
     root = Tk()
-    root.title("Калькулятор профилей (демо - v1.0.0)")
+    root.title("Калькулятор профилей (v1.0.0)")
     root.geometry("450x450")
 
     notebook: Notebook = Notebook()

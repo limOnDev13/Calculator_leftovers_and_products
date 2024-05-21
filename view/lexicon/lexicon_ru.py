@@ -7,7 +7,8 @@ BUTTONS: dict[str, str] = {
     'total_cutting': 'Раскрой и распил',
     'quick_calc': 'Быстрый расчет',
     'middle_calc': 'Точный расчет',
-    'reset': 'Сбросить'
+    'reset': 'Сбросить',
+    'save': 'Сохранить'
 }
 
 FRAMES: dict[str, str] = {
@@ -21,7 +22,10 @@ LABELS: dict[str, str] = {
     'input_min_remnant': 'Введите минимальную длину остатка (м):',
     'input_whole_profile': 'Введите длину целого профиля (м):',
     'input_number_profiles': 'Введите количество целых профилей в наличии (шт):',
-    'input_cutting_width': 'Введите ширину реза (м):'
+    'input_cutting_width': 'Введите ширину реза (м):',
+    'text_result': 'Схема распила:',
+    'total_waste': 'Суммарный отход (м):',
+    'percent_waste': 'Процент отхода (%):'
 }
 
 ERROR_LABELS: dict[str, str] = {

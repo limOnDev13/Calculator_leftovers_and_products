@@ -11,6 +11,7 @@ from re import Match
 
 from view.lexicon.lexicon_ru import LABELS, BUTTONS, ERROR_LABELS
 from view.view_exceptions import InputListWidthException, InputIntExc, InputFloatExc
+from view.frames.result_cut_window import window_with_cut_cheme
 from business.cutting import Cutting
 from business.quick_cutting import QuickCutting
 from business.middle_cutting import MiddleCutting
@@ -168,8 +169,10 @@ class SimpleCutCalc:
         def __calc_cut_with_algorithm() -> None:
             # Проверим введенные данные
             try:
-                products: list[float] = self.__check_format_list_width(self.__input_products_text, ERROR_LABELS['products'])
-                remnants: list[float] = self.__check_format_list_width(self.__input_remnants_text, ERROR_LABELS['remnants'])
+                products: list[float] = self.__check_format_list_width(
+                    self.__input_products_text, ERROR_LABELS['products'])
+                remnants: list[float] = self.__check_format_list_width(
+                    self.__input_remnants_text, ERROR_LABELS['remnants'])
                 corr: float = self.__check_param(self.__correction, ERROR_LABELS['correction'])
 
                 if products is not None and remnants is not None:
@@ -178,14 +181,19 @@ class SimpleCutCalc:
                         in_products=products,
                         correction=corr,
                         min_rest_length=self.__check_param(self.__min_remnant, ERROR_LABELS['min_remnant']),
-                        whole_profile_length=self.__check_param(self.__whole_profile_len, ERROR_LABELS['whole_profile']),
+                        whole_profile_length=self.__check_param(
+                            self.__whole_profile_len, ERROR_LABELS['whole_profile']),
                         number_whole_profiles=self.__check_number_whole_profiles(),
                         cutting_width=self.__check_param(self.__cutting_width, ERROR_LABELS['cut_width'])
                     )
 
                     # Распечатаем схему распила
-                    cut_scheme: CutScheme = CutScheme(quick_cut.cut())
-                    print(cut_scheme)
+                    cut_scheme: CutScheme = CutScheme(
+                        quick_cut.cut(),
+                        min_remnant=float(self.__min_remnant.get()),
+                        cut_width=float(self.__cutting_width.get()))
+                    window_with_cut_cheme(cut_scheme, title=f'Схема распила: {algorithm.__name__}')
+
             except (InputFloatExc, InputIntExc) as exc:
                 msg_box.showerror(
                     title=ERROR_LABELS['error_input'] + exc.title,
@@ -202,7 +210,10 @@ class SimpleCutCalc:
                     message=exc.__str__()
                 )
 
-                print(CutScheme(exc.current_cheme))
+                window_with_cut_cheme(CutScheme(
+                    exc.current_cheme,
+                    min_remnant=float(self.__min_remnant.get()),
+                    cut_width=float(self.__cutting_width.get())), title=f'Схема распила: {algorithm.__name__}')
 
         return __calc_cut_with_algorithm
 
