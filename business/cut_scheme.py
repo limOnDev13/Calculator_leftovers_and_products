@@ -25,6 +25,16 @@ class CutScheme:
         """Геттер для self.__cut_scheme"""
         return self.__cut_scheme
 
+    @property
+    def products(self) -> list[float]:
+        """Геттер для self.__products"""
+        return self.__products
+
+    @property
+    def remnants(self) -> list[float]:
+        """Геттер для self.__remnants"""
+        return self.__remnants
+
     def __str__(self) -> str:
         """
         Функция преобразует схему распила в удобно читаемый текст
