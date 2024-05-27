@@ -24,4 +24,4 @@ class NoRemnantsError(Exception):
     def __repr__(self) -> str:
         return (f'Для данного списка изделий не хватает имеющихся остатков и цельных профилей!\n'
                 f'Список изделий: {self.cut_scheme.products}\nСписок остатков: {self.cut_scheme.remnants}\n'
-                f'Схема распила: {self.cut_scheme.__str__()}')
+                f'Схема распила:\n{self.cut_scheme.__str__()}')

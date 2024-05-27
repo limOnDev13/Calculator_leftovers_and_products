@@ -112,4 +112,4 @@ class WrongSchemeError(Exception):
     def __repr__(self) -> str:
         return (f'Количество распилов больше чем количество имеющихся остатков!'
                 f'Список изделий: {self.cut_scheme.products}\nСписок остатков: {self.cut_scheme.remnants}\n'
-                f'Схема распила: {self.cut_scheme.__str__()}')
+                f'Схема распила:\n{self.cut_scheme.__str__()}')
