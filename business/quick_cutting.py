@@ -31,10 +31,13 @@ class QuickCutting(Cutting):
             # Если нет остатков и нет цельных профилей, то выбросим исключение
             if not current_remnants:
                 beautiful_scheme: CutScheme = CutScheme(
-                    cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width)
+                    cut_scheme=cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width,
+                    products=self.products, remnants=self.remnants)
                 beautiful_scheme.restore_order()
                 raise NoRemnantsError(
-                    title='Не хватает остатков и цельных профилей', current_scheme=beautiful_scheme.cut_scheme)
+                    title='Не хватает остатков и цельных профилей', current_scheme=beautiful_scheme.cut_scheme,
+                    products=self.products, remnants=self.remnants
+                )
 
             # Если остатки имеются, то возьмем наименьший
             min_remnant: tuple[float, int] = min(current_remnants, key=lambda remnant: remnant[0])
@@ -65,6 +68,7 @@ class QuickCutting(Cutting):
         # В схеме распила количество остатков в ключе может быть больше количества распилов для данного остатка -
         # исправим это
         beautiful_scheme: CutScheme = CutScheme(
-            cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width)
+            cut_scheme=cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width,
+            products=self.products, remnants=self.remnants)
         beautiful_scheme.restore_order()
         return beautiful_scheme.cut_scheme
