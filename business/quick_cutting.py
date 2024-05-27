@@ -13,7 +13,7 @@ class QuickCutting(Cutting):
         return ('Данный метод сначала ищет наименьший остаток, считает для него оптимальный распил,'
                 ' и так по очереди рассчитывает распил для всех изделий')
 
-    def cut(self) -> dict[tuple[float, int], list[list[float]]]:
+    def cut(self) -> CutScheme:
         """
         Метод для расчета распила. Данный метод сначала ищет наименьший остаток, считает для него оптимальный распил,
         и так по очереди рассчитывает распил для всех изделий
@@ -68,4 +68,4 @@ class QuickCutting(Cutting):
             cut_scheme=cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width,
             products=self.products, remnants=self.remnants)
         beautiful_scheme.restore_order()
-        return beautiful_scheme.cut_scheme
+        return beautiful_scheme

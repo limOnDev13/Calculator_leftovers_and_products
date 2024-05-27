@@ -199,9 +199,7 @@ class SimpleCutCalc:
                     )
                     logger.success('Данные введены верно!')
                     # Распечатаем схему распила
-                    cut_scheme: CutScheme = CutScheme(
-                        cut_scheme=algorithm_cut.cut(), min_remnant=float(self.__min_remnant.get()),
-                        cut_width=float(self.__cutting_width.get()), products=products, remnants=remnants)
+                    cut_scheme: CutScheme = algorithm_cut.cut()
                     logger.success('Схема распила рассчитана верно!')
                     window_with_cut_cheme(cut_scheme, title=f'Схема распила: {algorithm.__name__}')
 
