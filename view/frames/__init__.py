@@ -3,3 +3,4 @@
 """
 from .simple_cutting_calc import SimpleCutCalc
 from .result_cut_window import window_with_cut_cheme
+from .tooltips import get_help_tooltip

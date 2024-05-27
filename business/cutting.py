@@ -1,5 +1,8 @@
+"""Модуль с абстрактным классом, от которого наследуются все классы - алгоритмы расчета распила"""
 from copy import deepcopy
 from abc import ABC, abstractmethod
+
+from business.cut_scheme import CutScheme
 
 
 class Cutting(ABC):
@@ -91,7 +94,7 @@ class Cutting(ABC):
         return result_cutting
 
     @abstractmethod
-    def cut(self) -> dict[tuple[float, int], list[list[float]]]:
+    def cut(self) -> CutScheme:
         """
         Метод для расчета распила
         :return: Распил. Имеет тип словаря, ключи - кортежи, где первый элемент - длина остатка,

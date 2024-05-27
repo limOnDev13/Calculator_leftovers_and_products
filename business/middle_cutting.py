@@ -1,5 +1,6 @@
 from business.cutting import Cutting
 from business.cut_scheme import CutScheme
+from business.business_exceptions import NoRemnantsError
 
 from copy import deepcopy
 from typing import Optional
@@ -12,10 +13,11 @@ class MiddleCutting(Cutting):
         return ('Данный метод сначала ищет остаток, для которого распил будет оптимальным,'
                 ' и так по очереди рассчитывает распил для всех изделий')
 
-    def cut(self) -> dict[tuple[float, int], list[list[float]]]:
+    def cut(self) -> CutScheme:
         """
         Метод для расчета распила. Данный метод сначала ищет остаток, для которого распил будет оптимальным,
         и так по очереди рассчитывает распил для всех изделий
+        :raise NoRemnantError: Если остатков и целых профилей не хватит на изделия
         :return: Распил. Имеет тип словаря, ключи - кортежи, где первый элемент - длина остатка,
         второй - количество остатков данной длины. Значения словаря - список списков изделий для одного такого остатка
         :rtype: dict[tuple[float, int], list[list[float]]]
@@ -23,17 +25,24 @@ class MiddleCutting(Cutting):
         cutting_scheme: dict[tuple[float, int], list[list[float]]] = dict()
         current_remnants: set[tuple[float, int]] = self.generate_keys(self.remnants, min(self.products))
         current_products: list[float] = deepcopy(self.products)
-        number_used_profiles: int = 0
+
+        # Если есть цельные профиля, добавим в список один для поиска наименьшего остатка
+        if self.number_whole_profiles > 0:
+            current_remnants.add((self.whole_profile_length, self.number_whole_profiles))
 
         while current_products:
+            # Если нет остатков и нет цельных профилей, то выбросим исключение
+            if not current_remnants:
+                beautiful_scheme: CutScheme = CutScheme(
+                    cut_scheme=cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width,
+                    products=self.products, remnants=self.remnants)
+                beautiful_scheme.restore_order()
+                raise NoRemnantsError(title='Не хватает остатков и цельных профилей', cut_scheme=beautiful_scheme)
+
             # Найдем остаток, для которого распил будет самым оптимальным
             min_waste: float = self.whole_profile_length
             best_remnant: Optional[tuple[float, int]] = None
             best_cutting: list[float] = list()
-
-            # Если есть цельные профиля, добавим в список один для поиска наименьшего остатка
-            if self.number_whole_profiles > 0:
-                current_remnants.add((self.whole_profile_length, self.number_whole_profiles))
 
             for remnant in current_remnants:
                 current_cutting: list[float] = self.calculate_min_waste(remnant[0], current_products)
@@ -60,6 +69,7 @@ class MiddleCutting(Cutting):
         # В словарь добавляются ключи, в которых указываются количества имеющихся остатков
         # Но при этом в схеме могут использоваться не все остатки одной длины. Эту ситуацию необходимо поправить
         beautiful_scheme: CutScheme = CutScheme(
-            cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width)
+            cut_scheme=cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width,
+            products=self.products, remnants=self.remnants)
         beautiful_scheme.restore_order()  # Избавляемся от неиспользованных остатков
-        return beautiful_scheme.cut_scheme
+        return beautiful_scheme

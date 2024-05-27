@@ -1,5 +1,4 @@
 """Модуль отвечает за обработку схемы распила"""
-from business.business_exceptions import WrongSchemeError
 
 
 class CutScheme:
@@ -11,8 +10,11 @@ class CutScheme:
         min_remnant (float) - Минимальная длина остатка
         cut_width (float) - Поправка к ширине изделия
     """
-    def __init__(self, cut_scheme: dict[tuple[float, int], list[list[float]]],
+    def __init__(self, products: list[float], remnants: list[float],
+                 cut_scheme: dict[tuple[float, int], list[list[float]]],
                  min_remnant: float, cut_width: float) -> None:
+        self.__products: list[float] = products
+        self.__remnants: list[float] = remnants
         self.__cut_scheme: dict[tuple[float, int], list[list[float]]] = cut_scheme
         self.__min_remnant: float = min_remnant
         self.__cut_width: float = cut_width
@@ -21,6 +23,16 @@ class CutScheme:
     def cut_scheme(self) -> dict[tuple[float, int], list[list[float]]]:
         """Геттер для self.__cut_scheme"""
         return self.__cut_scheme
+
+    @property
+    def products(self) -> list[float]:
+        """Геттер для self.__products"""
+        return self.__products
+
+    @property
+    def remnants(self) -> list[float]:
+        """Геттер для self.__remnants"""
+        return self.__remnants
 
     def __str__(self) -> str:
         """
@@ -57,7 +69,8 @@ class CutScheme:
                 new_key: tuple[float, int] = (remnant[0], len(self.__cut_scheme[remnant]))
                 self.__cut_scheme[new_key] = self.__cut_scheme.pop(remnant)
             elif remnant[1] < len(self.__cut_scheme[remnant]):
-                raise WrongSchemeError(title='Неправильный расчет распила', current_scheme=self.__cut_scheme)
+                raise WrongSchemeError(
+                    title='Неправильный расчет распила', cut_scheme=self)
 
     def waste(self) -> tuple[float, float]:
         """
@@ -81,3 +94,22 @@ class CutScheme:
         waste_percent: float = round((total_waste * 100 / total_remnant), 3)
 
         return round(total_waste, 3), waste_percent
+
+
+class WrongSchemeError(Exception):
+    def __init__(self, title: str, cut_scheme: CutScheme):
+        self.__title: str = title
+        self.__cut_scheme: CutScheme = cut_scheme
+
+    @property
+    def cut_scheme(self) -> CutScheme:
+        """Геттер для self.__cut_scheme"""
+        return self.__cut_scheme
+
+    def __str__(self) -> str:
+        return 'Количество распилов больше чем количество имеющихся остатков!'
+
+    def __repr__(self) -> str:
+        return (f'Количество распилов больше чем количество имеющихся остатков!'
+                f'Список изделий: {self.cut_scheme.products}\nСписок остатков: {self.cut_scheme.remnants}\n'
+                f'Схема распила:\n{self.cut_scheme.__str__()}')

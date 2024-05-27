@@ -11,4 +11,4 @@ if __name__ == '__main__':
     try:
         main_window.main()
     except Exception as exc:
-        logger.error(f'Непредвиденная ошибка!\n{exc.__str__()}')
+        logger.exception('Непредвиденная ошибка')
