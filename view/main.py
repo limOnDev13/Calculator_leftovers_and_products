@@ -11,7 +11,7 @@ from .lexicon.lexicon_ru import FRAMES
 
 def main():
     root = Tk()
-    root.title("Калькулятор профилей (v1.1.0)")
+    root.title("Калькулятор профилей (v1.0.1)")
     root.geometry("450x475")
 
     notebook: Notebook = Notebook()
