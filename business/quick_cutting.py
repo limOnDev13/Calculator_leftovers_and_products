@@ -34,10 +34,7 @@ class QuickCutting(Cutting):
                     cut_scheme=cutting_scheme, min_remnant=self.min_rest_length, cut_width=self.cutting_width,
                     products=self.products, remnants=self.remnants)
                 beautiful_scheme.restore_order()
-                raise NoRemnantsError(
-                    title='Не хватает остатков и цельных профилей', current_scheme=beautiful_scheme.cut_scheme,
-                    products=self.products, remnants=self.remnants
-                )
+                raise NoRemnantsError(title='Не хватает остатков и цельных профилей', cut_scheme=beautiful_scheme)
 
             # Если остатки имеются, то возьмем наименьший
             min_remnant: tuple[float, int] = min(current_remnants, key=lambda remnant: remnant[0])

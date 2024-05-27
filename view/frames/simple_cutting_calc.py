@@ -17,8 +17,8 @@ from view.frames.tooltips import get_help_tooltip
 from business.cutting import Cutting
 from business.quick_cutting import QuickCutting
 from business.middle_cutting import MiddleCutting
-from business.cut_scheme import CutScheme
-from business.business_exceptions import NoRemnantsError, WrongSchemeError
+from business.cut_scheme import CutScheme, WrongSchemeError
+from business.business_exceptions import NoRemnantsError
 
 
 class SimpleCutCalc:
@@ -229,10 +229,7 @@ class SimpleCutCalc:
                     message=exc.__str__()
                 )
 
-                window_with_cut_cheme(CutScheme(
-                    cut_scheme=exc.current_cheme, min_remnant=float(self.__min_remnant.get()),
-                    cut_width=float(self.__cutting_width.get()), products=exc.products, remnants=exc.remnants),
-                    title=f'Схема распила: {algorithm.__name__}')
+                window_with_cut_cheme(exc.cut_scheme, title=f'Схема распила: {algorithm.__name__}')
 
         return __calc_cut_with_algorithm
 
