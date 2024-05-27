@@ -11,8 +11,11 @@ class CutScheme:
         min_remnant (float) - Минимальная длина остатка
         cut_width (float) - Поправка к ширине изделия
     """
-    def __init__(self, cut_scheme: dict[tuple[float, int], list[list[float]]],
+    def __init__(self, products: list[float], remnants: list[float],
+                 cut_scheme: dict[tuple[float, int], list[list[float]]],
                  min_remnant: float, cut_width: float) -> None:
+        self.__products: list[float] = products
+        self.__remnants: list[float] = remnants
         self.__cut_scheme: dict[tuple[float, int], list[list[float]]] = cut_scheme
         self.__min_remnant: float = min_remnant
         self.__cut_width: float = cut_width
@@ -57,7 +60,9 @@ class CutScheme:
                 new_key: tuple[float, int] = (remnant[0], len(self.__cut_scheme[remnant]))
                 self.__cut_scheme[new_key] = self.__cut_scheme.pop(remnant)
             elif remnant[1] < len(self.__cut_scheme[remnant]):
-                raise WrongSchemeError(title='Неправильный расчет распила', current_scheme=self.__cut_scheme)
+                raise WrongSchemeError(
+                    title='Неправильный расчет распила', current_scheme=self.__cut_scheme,
+                    products=self.__products, remnants=self.__remnants)
 
     def waste(self) -> tuple[float, float]:
         """
