@@ -23,4 +23,4 @@ class NoRemnantsError(Exception):
 
 class WrongSchemeError(NoRemnantsError):
     def __str__(self) -> str:
-        return 'Количество распилов больше чем количество имеющихся остатков!'
+        return f'Количество распилов больше чем количество имеющихся остатков!\nРаспил: {self.current_cheme}'

@@ -2,6 +2,7 @@
 from tkinter import Tk, filedialog
 from tkinter.ttk import Label, Frame, Button
 from typing import Callable
+from loguru import logger
 
 from view.lexicon.lexicon_ru import LABELS, BUTTONS
 from business.cut_scheme import CutScheme
@@ -66,5 +67,6 @@ def save_scheme(cut_scheme: CutScheme) -> Callable:
         if filepath != "":
             with open(filepath, "w", encoding='utf-8') as file:
                 file.write(cut_scheme.__str__())
+        logger.success('Файл с распилом сохранен!')
 
     return saving_func
