@@ -1,0 +1,6 @@
+.idea
+business/tests/tests_data
+.venv
+main.spec
+build
+logging.log
