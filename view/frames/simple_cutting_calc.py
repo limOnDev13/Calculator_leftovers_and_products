@@ -8,6 +8,7 @@ import tkinter.messagebox as msg_box
 from typing import Optional, Callable, Type
 import re
 from re import Match
+from loguru import logger
 
 from view.lexicon.lexicon_ru import LABELS, BUTTONS, ERROR_LABELS
 from view.view_exceptions import InputListWidthException, InputIntExc, InputFloatExc
@@ -16,7 +17,7 @@ from business.cutting import Cutting
 from business.quick_cutting import QuickCutting
 from business.middle_cutting import MiddleCutting
 from business.cut_scheme import CutScheme
-from business.business_exceptions import NoRemnantsError
+from business.business_exceptions import NoRemnantsError, WrongSchemeError
 
 
 class SimpleCutCalc:
@@ -176,7 +177,7 @@ class SimpleCutCalc:
                 corr: float = self.__check_param(self.__correction, ERROR_LABELS['correction'])
 
                 if products is not None and remnants is not None:
-                    quick_cut: Cutting = algorithm(
+                    algorithm_cut: Cutting = algorithm(
                         remnants=remnants,
                         in_products=products,
                         correction=corr,
@@ -186,25 +187,34 @@ class SimpleCutCalc:
                         number_whole_profiles=self.__check_number_whole_profiles(),
                         cutting_width=self.__check_param(self.__cutting_width, ERROR_LABELS['cut_width'])
                     )
-
+                    logger.success('Данные введены верно!')
                     # Распечатаем схему распила
                     cut_scheme: CutScheme = CutScheme(
-                        quick_cut.cut(),
+                        algorithm_cut.cut(),
                         min_remnant=float(self.__min_remnant.get()),
                         cut_width=float(self.__cutting_width.get()))
+                    logger.success('Схема распила рассчитана верно!')
                     window_with_cut_cheme(cut_scheme, title=f'Схема распила: {algorithm.__name__}')
 
             except (InputFloatExc, InputIntExc) as exc:
+                logger.warning(exc.__str__())
+
                 msg_box.showerror(
                     title=ERROR_LABELS['error_input'] + exc.title,
                     message=exc.__str__()
                 )
             except InputListWidthException as exc:
+                logger.warning(exc.__str__())
+
                 msg_box.showerror(
                     title=exc.title,
                     message=exc.__str__()
                 )
+            except WrongSchemeError as exc:
+                logger.error(exc.__str__())
             except NoRemnantsError as exc:
+                logger.warning(exc.__str__())
+
                 msg_box.showerror(
                     title=exc.title,
                     message=exc.__str__()
@@ -214,6 +224,8 @@ class SimpleCutCalc:
                     exc.current_cheme,
                     min_remnant=float(self.__min_remnant.get()),
                     cut_width=float(self.__cutting_width.get())), title=f'Схема распила: {algorithm.__name__}')
+
+
 
         return __calc_cut_with_algorithm
 
