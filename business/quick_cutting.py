@@ -24,7 +24,8 @@ class QuickCutting(Cutting):
         cutting_scheme: dict[tuple[float, int], list[list[float]]] = dict()
         current_remnants: set[tuple[float, int]] = self.generate_keys(self.remnants, min(self.products))
         # Добавим цельные профили в список остатков
-        current_remnants.add((self.whole_profile_length, self.number_whole_profiles))
+        if self.number_whole_profiles > 0:
+            current_remnants.add((self.whole_profile_length, self.number_whole_profiles))
         current_products: list[float] = deepcopy(self.products)
 
         while current_products:

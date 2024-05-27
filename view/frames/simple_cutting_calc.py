@@ -218,7 +218,7 @@ class SimpleCutCalc:
                     message=exc.__str__()
                 )
             except WrongSchemeError as exc:
-                logger.exception(exc)
+                logger.exception(exc.__repr__())
             except NoRemnantsError as exc:
                 logger.warning(exc.__repr__())
 
