@@ -1,5 +1,4 @@
 """Модуль отвечает за обработку схемы распила"""
-from business.business_exceptions import WrongSchemeError
 
 
 class CutScheme:
@@ -71,8 +70,7 @@ class CutScheme:
                 self.__cut_scheme[new_key] = self.__cut_scheme.pop(remnant)
             elif remnant[1] < len(self.__cut_scheme[remnant]):
                 raise WrongSchemeError(
-                    title='Неправильный расчет распила', current_scheme=self.__cut_scheme,
-                    products=self.__products, remnants=self.__remnants)
+                    title='Неправильный расчет распила', cut_scheme=self)
 
     def waste(self) -> tuple[float, float]:
         """
@@ -96,3 +94,22 @@ class CutScheme:
         waste_percent: float = round((total_waste * 100 / total_remnant), 3)
 
         return round(total_waste, 3), waste_percent
+
+
+class WrongSchemeError(Exception):
+    def __init__(self, title: str, cut_scheme: CutScheme):
+        self.__title: str = title
+        self.__cut_scheme: CutScheme = cut_scheme
+
+    @property
+    def cut_scheme(self) -> CutScheme:
+        """Геттер для self.__cut_scheme"""
+        return self.__cut_scheme
+
+    def __str__(self) -> str:
+        return 'Количество распилов больше чем количество имеющихся остатков!'
+
+    def __repr__(self) -> str:
+        return (f'Количество распилов больше чем количество имеющихся остатков!'
+                f'Список изделий: {self.cut_scheme.products}\nСписок остатков: {self.cut_scheme.remnants}\n'
+                f'Схема распила: {self.cut_scheme.__str__()}')
