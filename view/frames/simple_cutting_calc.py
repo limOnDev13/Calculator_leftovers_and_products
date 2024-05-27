@@ -10,9 +10,10 @@ import re
 from re import Match
 from loguru import logger
 
-from view.lexicon.lexicon_ru import LABELS, BUTTONS, ERROR_LABELS
+from view.lexicon.lexicon_ru import LABELS, BUTTONS, ERROR_LABELS, TOOLTIPS
 from view.view_exceptions import InputListWidthException, InputIntExc, InputFloatExc
 from view.frames.result_cut_window import window_with_cut_cheme
+from view.frames.tooltips import get_help_tooltip
 from business.cutting import Cutting
 from business.quick_cutting import QuickCutting
 from business.middle_cutting import MiddleCutting
@@ -39,50 +40,23 @@ class SimpleCutCalc:
         self.__cutting_width: StringVar = StringVar()
 
     def get_frame(self) -> Frame:
-        # Разделим все на разные фреймы для красоты
-        input_products_and_remnants_frame: Frame = Frame(self.__frame)
         # 1) Ввод ширин изделий из наряда
-        input_products_label: Label = Label(input_products_and_remnants_frame, text=LABELS['input_products'])
-        input_products_label.pack(anchor='nw', padx=5, pady=5)
+        products_frame: Frame = Frame(self.__frame)
+        input_products_label: Label = Label(products_frame, text=LABELS['input_products'])
+        help_products: Label = get_help_tooltip(products_frame, tooltip_text=TOOLTIPS['input_products'])
 
         self.__input_products_text = ScrolledText(
-            input_products_and_remnants_frame, width=50, height=5)
-
-        self.__input_products_text.pack(anchor='nw', padx=5, pady=5)
+            self.__frame, width=50, height=5)
 
         # 2) Ввод остатков
-        input_remnants_label: Label = Label(input_products_and_remnants_frame, text=LABELS['input_remnants'])
-        input_remnants_label.pack(anchor='nw', padx=5, pady=5)
+        remnants_frame: Frame = Frame(self.__frame)
+        input_remnants_label: Label = Label(remnants_frame, text=LABELS['input_remnants'])
+        help_remnants: Label = get_help_tooltip(remnants_frame, tooltip_text=TOOLTIPS['input_remnants'])
 
         self.__input_remnants_text = ScrolledText(
-            input_products_and_remnants_frame, width=50, height=5)
-        self.__input_remnants_text.pack(anchor='nw', padx=5, pady=5)
-        # Упакуем полученный фрейм
-        input_products_and_remnants_frame.pack(anchor='nw')
+            self.__frame, width=50, height=5)
 
-        # 3) Ввод основных параметров
-        grid_data: list[tuple[str, StringVar]] = [
-            (LABELS['input_correction'], self.__correction),
-            (LABELS['input_min_remnant'], self.__min_remnant),
-            (LABELS['input_whole_profile'], self.__whole_profile_len),
-            (LABELS['input_number_profiles'], self.__number_whole_profiles),
-            (LABELS['input_cutting_width'], self.__cutting_width)
-        ]
-
-        for num, data in enumerate(grid_data):
-            # Сделаем для каждого ввода отдельный фрейм и упакуем все вводы с помощью grid
-            # Так, текст и ввод будут красиво расположены
-            frame: Frame = Frame(self.__frame)
-            label: Label = Label(frame, text=data[0])
-            entry: Entry = Entry(frame, width=10, textvariable=data[1])
-
-            label.grid(row=num, column=0, padx=5, pady=5)
-            entry.grid(row=num, column=1, padx=5, pady=5)
-
-            # Упакуем фрейм
-            frame.pack(anchor='nw')
-
-        # 4) Добавим кнопки для расчета и и сброса введенных данных
+        # 3) Добавим кнопки для расчета и и сброса введенных данных
         frame_with_buttons: Frame = Frame(self.__frame)
 
         buttons: list[Button] = [
@@ -90,10 +64,46 @@ class SimpleCutCalc:
             Button(frame_with_buttons, text=BUTTONS['middle_calc'], command=self.__calc_cut(MiddleCutting)),
             Button(frame_with_buttons, text=BUTTONS['reset'], command=self.__reset_button),
         ]
+
+        # 4) Упакуем ввод изделий
+        products_frame.pack(anchor='nw', padx=5, pady=5)
+        input_products_label.grid(row=0, column=0, padx=5, pady=5)
+        help_products.grid(row=0, column=1, padx=1, pady=5)
+        self.__input_products_text.pack(anchor='nw', padx=5, pady=5)
+        # Упакуем ввод остатков
+        remnants_frame.pack(anchor='nw', padx=5, pady=5)
+        input_remnants_label.grid(row=0, column=0, padx=5, pady=5)
+        help_remnants.grid(row=0, column=1, padx=1, pady=5)
+        self.__input_remnants_text.pack(anchor='nw', padx=5, pady=5)
+
+        # 5) Ввод основных параметров
+        grid_data: list[tuple[str, StringVar]] = [
+            ('input_correction', self.__correction),
+            ('input_min_remnant', self.__min_remnant),
+            ('input_whole_profile', self.__whole_profile_len),
+            ('input_number_profiles', self.__number_whole_profiles),
+            ('input_cutting_width', self.__cutting_width)
+        ]
+
+        for num, data in enumerate(grid_data):
+            # Сделаем для каждого ввода отдельный фрейм и упакуем все вводы с помощью grid
+            # Так, текст и ввод будут красиво расположены
+            frame: Frame = Frame(self.__frame)
+            label: Label = Label(frame, text=LABELS[data[0]])
+            entry: Entry = Entry(frame, width=10, textvariable=data[1])
+            help_label: Label = get_help_tooltip(frame, TOOLTIPS[data[0]])
+
+            label.grid(row=0, column=0, padx=5, pady=5)
+            entry.grid(row=0, column=1, padx=5, pady=5)
+            help_label.grid(row=0, column=2, padx=1, pady=5)
+
+            # Упакуем фрейм
+            frame.pack(anchor='nw')
+
+        # Упакуем кнопки
         for num, button in enumerate(buttons):
             button.grid(row=0, column=num)
-
-        frame_with_buttons.pack(anchor='ne')
+        frame_with_buttons.pack(anchor='se')
 
         return self.__frame
 
@@ -190,9 +200,8 @@ class SimpleCutCalc:
                     logger.success('Данные введены верно!')
                     # Распечатаем схему распила
                     cut_scheme: CutScheme = CutScheme(
-                        algorithm_cut.cut(),
-                        min_remnant=float(self.__min_remnant.get()),
-                        cut_width=float(self.__cutting_width.get()))
+                        cut_scheme=algorithm_cut.cut(), min_remnant=float(self.__min_remnant.get()),
+                        cut_width=float(self.__cutting_width.get()), products=products, remnants=remnants)
                     logger.success('Схема распила рассчитана верно!')
                     window_with_cut_cheme(cut_scheme, title=f'Схема распила: {algorithm.__name__}')
 
@@ -211,9 +220,9 @@ class SimpleCutCalc:
                     message=exc.__str__()
                 )
             except WrongSchemeError as exc:
-                logger.error(exc.__str__())
+                logger.exception(exc)
             except NoRemnantsError as exc:
-                logger.warning(exc.__str__())
+                logger.warning(exc.__repr__())
 
                 msg_box.showerror(
                     title=exc.title,
@@ -221,11 +230,9 @@ class SimpleCutCalc:
                 )
 
                 window_with_cut_cheme(CutScheme(
-                    exc.current_cheme,
-                    min_remnant=float(self.__min_remnant.get()),
-                    cut_width=float(self.__cutting_width.get())), title=f'Схема распила: {algorithm.__name__}')
-
-
+                    cut_scheme=exc.current_cheme, min_remnant=float(self.__min_remnant.get()),
+                    cut_width=float(self.__cutting_width.get()), products=exc.products, remnants=exc.remnants),
+                    title=f'Схема распила: {algorithm.__name__}')
 
         return __calc_cut_with_algorithm
 
